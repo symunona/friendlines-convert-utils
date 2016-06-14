@@ -1,0 +1,26 @@
+{
+  "name": "friendlines-convert-utils",
+  "version": "0.0.1",
+  "description": "Helper utils for data aggregation",
+  "main": "convert-utils.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/symunona/friendlines-convert-utils.git"
+  },
+  "keywords": [
+    "facebook",
+    "friendlines",
+    "analyze",
+    "message",
+    "history"
+  ],
+  "author": "Bendeguy",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/symunona/friendlines-convert-utils/issues"
+  },
+  "homepage": "https://github.com/symunona/friendlines-convert-utils#readme"
+}
