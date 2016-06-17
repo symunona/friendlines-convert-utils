@@ -31,32 +31,35 @@ exports.userActivityByMonth = function(messageData) {
     /* First group by user */
     var messages = _.chain(messageData.messages).groupBy(function(message) {
             return message.userId;
-        }).map(function(userMessages) {
-            /* Second, group by time, now simply by YYYYMM */
-            return _.chain(userMessages).groupBy(function(messageByUser) {
-                    return dateToTimeKey(messageByUser.sendDate);
-                })
-                /* After that, aggregate! */
-                .map(function(monthData) {
-                    var firstMessageDate = monthData.reduce(function(minDate, currentMessage) {
-                        return moment(currentMessage.sendDate).isBefore(minDate) ?
-                            currentMessage.sendDate : minDate;
-                    });
-                    var lastMessageDate = monthData.reduce(function(maxDate, currentMessage) {
-                        return moment(currentMessage.sendDate).isAfter(maxDate) ?
-                            currentMessage.sendDate : maxDate;
-                    });
-                    return {
-                        userName: messageData.parsingMetaData.userIdMap[monthData[0].userId],
-                        firstMessageDate: firstMessageDate,
-                        firstMonthKey: dateToTimeKey(firstMessageDate),
-                        lastMessageDate: lastMessageDate,
-                        lastMonthKey: dateToTimeKey(lastMessageDate),
-                        monthData: createMessageStatsFromMessageArray(monthData)
-                    };
-                }).value();
+        }).map(function(userMessages, userId) {
+
+            var firstMessageDate = userMessages.reduce(function(minDate, currentMessage) {
+                return moment(currentMessage.sendDate).isBefore(minDate) ?
+                    currentMessage.sendDate : minDate;
+            }, userMessages[0].sendDate);
+            var lastMessageDate = userMessages.reduce(function(maxDate, currentMessage) {
+                return moment(currentMessage.sendDate).isAfter(maxDate) ?
+                    currentMessage.sendDate : maxDate;
+            }, userMessages[0].sendDate);
+            /* userId: {metadata, monthData} */
+            return [userId, {
+                userName: messageData.parsingMetaData.userIdMap[userMessages[0].userId],
+                firstMessageDate: firstMessageDate,
+                firstMonthKey: dateToTimeKey(firstMessageDate),
+                lastMessageDate: lastMessageDate,
+                lastMonthKey: dateToTimeKey(lastMessageDate),
+                
+                /* Second, group by time, now simply by YYYYMM */
+                monthData: _.chain(userMessages).groupBy(function(messageByUser) {
+                        return dateToTimeKey(messageByUser.sendDate);
+                    })
+                    .map(function(monthData, monthKey) {
+                        /* monthData: {monthKey:{ sumdata} } */
+                        return [monthKey, createMessageStatsFromMessageArray(monthData)];
+                    }).object().value()
+            }];
         })
-        .value();
+        .object().value();
 
     return messages;
 };
