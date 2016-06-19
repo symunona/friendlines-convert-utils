@@ -58,6 +58,7 @@ exports.userActivityByMonth = function(messageData) {
 
             /* userId: {metadata, monthData} */
             return [userId, {
+                id: userId,
                 userName: messageData.parsingMetaData.userIdMap[userMessages[0].userId],
                 firstMessageDate: firstMessageDate,
                 firstMonthKey: dateToTimeKey(firstMessageDate),
