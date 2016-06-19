@@ -63,7 +63,7 @@ exports.userActivityByMonth = function(messageData) {
                 firstMonthKey: dateToTimeKey(firstMessageDate),
                 lastMessageDate: lastMessageDate,
                 lastMonthKey: dateToTimeKey(lastMessageDate),
-                sums: sumUserActivity(monthData),
+                sums: exports.sumUserActivity(monthData),
                 /* Second, group by time, now simply by YYYYMM */
                 monthData: monthData
             }];
