@@ -2,6 +2,10 @@ var moment = require('moment');
 var _ = require('underscore');
 var notSumKeys = 'id messageId threadId toUserId fromUserId userId'.split(' ');
 
+
+
+
+
 /**
  * 
  * Generates a structure from the database:
@@ -41,6 +45,17 @@ exports.userActivityByMonth = function(messageData) {
                 return moment(currentMessage.sendDate).isAfter(maxDate) ?
                     currentMessage.sendDate : maxDate;
             }, userMessages[0].sendDate);
+
+            /* Calculate month activity */
+            var monthData = _.chain(userMessages).groupBy(function(messageByUser) {
+                    return dateToTimeKey(messageByUser.sendDate);
+                })
+                .map(function(monthData, monthKey) {
+                    /* monthData: {monthKey:{ sumdata} } */
+
+                    return [monthKey, createMessageStatsFromMessageArray(monthData)];
+                }).object().value();
+
             /* userId: {metadata, monthData} */
             return [userId, {
                 userName: messageData.parsingMetaData.userIdMap[userMessages[0].userId],
@@ -48,20 +63,41 @@ exports.userActivityByMonth = function(messageData) {
                 firstMonthKey: dateToTimeKey(firstMessageDate),
                 lastMessageDate: lastMessageDate,
                 lastMonthKey: dateToTimeKey(lastMessageDate),
-                
+                sums: sumUserActivity(monthData),
                 /* Second, group by time, now simply by YYYYMM */
-                monthData: _.chain(userMessages).groupBy(function(messageByUser) {
-                        return dateToTimeKey(messageByUser.sendDate);
-                    })
-                    .map(function(monthData, monthKey) {
-                        /* monthData: {monthKey:{ sumdata} } */
-                        return [monthKey, createMessageStatsFromMessageArray(monthData)];
-                    }).object().value()
+                monthData: monthData
             }];
         })
         .object().value();
 
     return messages;
+};
+
+/**
+ * Counts overall metadata for users.
+ * Extends userActivity object with the following:
+ * {
+ *  sums:{}
+ * }
+ */
+
+exports.sumUserActivity = function(userMonths) {
+    var initial = {
+        activeMonthCount: 0
+    };
+    var ret = Object.keys(userMonths).reduce(function(prev, monthKey) {
+
+        var monthSums = userMonths[monthKey].sum;
+        for (var key in monthSums) {
+            /* Increase sum value of the key */
+            if (!prev[key]) prev[key] = 0;
+            prev[key] += monthSums[key];
+
+        }
+        prev.activeMonthCount++;
+        return prev;
+    }, initial);
+    return ret;
 };
 
 /**
@@ -108,6 +144,8 @@ function createMessageStatsFromMessageArray(messages) {
     }, initial);
 
     ret.outbound.count = messages.length - ret.inbound.count;
+    ret.sum.count = messages.length;
+    ret.sum.length = ret.inbound.length + ret.outbound.length;
     ret.inbound.averageLength = ret.inbound.count ? ret.inbound.length / ret.inbound.count : 0;
     ret.outbound.averageLength = ret.outbound.count ? ret.outbound.length / ret.outbound.count : 0;
     return ret;
