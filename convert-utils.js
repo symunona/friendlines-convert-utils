@@ -64,7 +64,9 @@ exports.userActivityByMonth = function(messageData) {
                 firstMonthKey: dateToTimeKey(firstMessageDate),
                 lastMessageDate: lastMessageDate,
                 lastMonthKey: dateToTimeKey(lastMessageDate),
-                sums: exports.sumUserActivity(monthData),
+                sums: exports.sumUserActivity(monthData, 'sum'),
+                inbound: exports.sumUserActivity(monthData, 'inbound'),
+                outbound: exports.sumUserActivity(monthData, 'outbound'),
                 /* Second, group by time, now simply by YYYYMM */
                 monthData: monthData
             }];
@@ -76,19 +78,19 @@ exports.userActivityByMonth = function(messageData) {
 
 /**
  * Counts overall metadata for users.
- * Extends userActivity object with the following:
- * {
- *  sums:{}
- * }
+ * returns the metadata extracted.
+ * @param userMonth the array of month the user chated
+ * @param boundKey possible values (inbount, outbound, sum)
+ * 
  */
 
-exports.sumUserActivity = function(userMonths) {
+exports.sumUserActivity = function(userMonths, boundKey) {
     var initial = {
         activeMonthCount: 0
     };
     var ret = Object.keys(userMonths).reduce(function(prev, monthKey) {
 
-        var monthSums = userMonths[monthKey].sum;
+        var monthSums = userMonths[monthKey][boundKey];
         for (var key in monthSums) {
             /* Increase sum value of the key */
             if (!prev[key]) prev[key] = 0;
