@@ -22,5 +22,8 @@
   "bugs": {
     "url": "https://github.com/symunona/friendlines-convert-utils/issues"
   },
-  "homepage": "https://github.com/symunona/friendlines-convert-utils#readme"
+  "homepage": "https://github.com/symunona/friendlines-convert-utils#readme",
+  "dependencies": {
+    "underscore": "^1.8.3"
+  }
 }
