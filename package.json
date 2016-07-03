@@ -24,6 +24,7 @@
   },
   "homepage": "https://github.com/symunona/friendlines-convert-utils#readme",
   "dependencies": {
+    "moment": "^2.13.0",
     "underscore": "^1.8.3"
   }
 }
